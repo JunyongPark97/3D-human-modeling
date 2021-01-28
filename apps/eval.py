@@ -63,7 +63,10 @@ class Evaluator:
 
     def load_image(self, image_path, mask_path):
         # Name
-        img_name = os.path.splitext(os.path.basename(image_path))[0]
+        img_name = []
+        for i in range(len(image_path)):
+            img_name.append(os.path.splitext(os.path.basename(image_path[i]))[0])
+        # img_name = os.path.splitext(os.path.basename(image_path))[0]
         # Calib
         B_MIN = np.array([-1, -1, -1])
         B_MAX = np.array([1, 1, 1])
@@ -71,18 +74,33 @@ class Evaluator:
         projection_matrix[1, 1] = -1
         calib = torch.Tensor(projection_matrix).float()
         # Mask
-        mask = Image.open(mask_path).convert('L')
-        mask = transforms.Resize(self.load_size)(mask)
-        mask = transforms.ToTensor()(mask).float()
+        mask = []
+        for i in range(len(mask_path)):
+            t_mask = Image.open(mask_path[i]).convert('L')
+            t_mask = transforms.Resize(self.load_size)(t_mask)
+            t_mask = transforms.ToTensor()(t_mask).float()
+            mask.append(t_mask)
+
+        mask_result = torch.stack(mask, dim=0)
+        # mask_result = mask_result.view(mask_result[0] * mask_result[1], mask_result[2], mask_result[3], mask_result[4])
         # image
-        image = Image.open(image_path).convert('RGB')
-        image = self.to_tensor(image)
-        image = mask.expand_as(image) * image
+        image = []
+        for i in range(len(image_path)):
+            t_image = Image.open(image_path[i]).convert('RGB')
+            t_image = self.to_tensor(t_image)
+            t_image = t_image
+            t_image = mask[i].expand_as(t_image) * t_image
+            image.append(t_image)
+        image_result = torch.stack(image, dim=0)
+        # image_result = image_result.view(image_result[0] * image_result[1], image_result[2], image_result[3], image_result[4])
+
+        calib_result = torch.stack([calib, calib], dim=0)
+        # calib_result = calib_result.view(calib_result[0] * calib_result[1], calib_result[2], calib_result[3])
         return {
             'name': img_name,
-            'img': image.unsqueeze(0),
-            'calib': calib.unsqueeze(0),
-            'mask': mask.unsqueeze(0),
+            'img': image_result,
+            'calib': calib_result,
+            'mask': mask_result,
             'b_min': B_MIN,
             'b_max': B_MAX,
         }
@@ -114,10 +132,17 @@ if __name__ == '__main__':
 
     print("num; ", len(test_masks))
 
-    for image_path, mask_path in tqdm.tqdm(zip(test_images, test_masks)):
-        try:
-            print(image_path, mask_path)
-            data = evaluator.load_image(image_path, mask_path)
-            evaluator.eval(data, True)
-        except Exception as e:
-           print("error:", e.args)
+    try:
+        print(test_images, test_masks)
+        data = evaluator.load_image(test_images, test_masks)
+        evaluator.eval(data, True)
+    except Exception as e:
+        print("error:", e.args)
+
+    # for image_path, mask_path in tqdm.tqdm(zip(test_images, test_masks)):
+    #     try:
+    #         print(image_path, mask_path)
+    #         data = evaluator.load_image(image_path, mask_path)
+    #         evaluator.eval(data, True)
+    #     except Exception as e:
+    #        print("error:", e.args)

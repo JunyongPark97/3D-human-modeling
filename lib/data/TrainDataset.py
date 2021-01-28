@@ -1,3 +1,5 @@
+import gc
+
 from torch.utils.data import Dataset
 import numpy as np
 import os
@@ -249,7 +251,7 @@ class TrainDataset(Dataset):
             random.seed(1991)
             np.random.seed(1991)
             torch.manual_seed(1991)
-        mesh = self.mesh_dic[subject]
+        mesh = self.mesh_dic[subject].copy()
         surface_points, _ = trimesh.sample.sample_surface(mesh, 4 * self.num_sample_inout)
         sample_points = surface_points + np.random.normal(scale=self.opt.sigma, size=surface_points.shape)
 
@@ -279,7 +281,13 @@ class TrainDataset(Dataset):
         samples = torch.Tensor(samples).float()
         labels = torch.Tensor(labels).float()
         
-        del mesh
+
+        del sample_points
+        del surface_points
+        del inside
+        del inside_points
+        del outside_points
+        gc.collect()
 
         return {
             'samples': samples,

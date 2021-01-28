@@ -94,13 +94,12 @@ def train(opt):
             image_tensor = train_data['img'].to(device=cuda)
             calib_tensor = train_data['calib'].to(device=cuda)
             sample_tensor = train_data['samples'].to(device=cuda)
-
+            label_tensor = train_data['labels'].to(device=cuda)
             image_tensor, calib_tensor = reshape_multiview_tensors(image_tensor, calib_tensor)
 
             if opt.num_views > 1:
                 sample_tensor = reshape_sample_tensor(sample_tensor, opt.num_views)
-
-            label_tensor = train_data['labels'].to(device=cuda)
+                label_tensor = reshape_sample_tensor(label_tensor, opt.num_views)
 
             res, error = netG.forward(image_tensor, sample_tensor, calib_tensor, labels=label_tensor)
 
@@ -113,6 +112,7 @@ def train(opt):
                     iter_net_time - epoch_start_time)
 
             if train_idx % opt.freq_plot == 0:
+                # print('Epoch: {0}'.format(epoch))
                 print(
                     'Name: {0} | Epoch: {1} | {2}/{3} | Err: {4:.06f} | LR: {5:.06f} | Sigma: {6:.02f} | dataT: {7:.05f} | netT: {8:.05f} | ETA: {9:02d}:{10:02d}'.format(
                         opt.name, epoch, train_idx, len(train_data_loader), error.item(), lr, opt.sigma,

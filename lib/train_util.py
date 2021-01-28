@@ -70,6 +70,7 @@ def gen_mesh(opt, net, cuda, data, save_path, use_octree=True):
         print(e)
         print('Can not create marching cubes at this time.')
 
+
 def gen_mesh_color(opt, netG, netC, cuda, data, save_path, use_octree=True):
     image_tensor = data['img'].to(device=cuda)
     calib_tensor = data['calib'].to(device=cuda)

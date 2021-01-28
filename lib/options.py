@@ -9,7 +9,7 @@ class BaseOptions():
     def initialize(self, parser):
         # Datasets related
         g_data = parser.add_argument_group('Data')
-        g_data.add_argument('--dataroot', type=str, default='./data',
+        g_data.add_argument('--dataroot', type=str, default='../data',
                             help='path to images (data folder)')
 
         g_data.add_argument('--loadSize', type=int, default=512, help='load size of input image')
@@ -20,7 +20,7 @@ class BaseOptions():
                            help='name of the experiment. It decides where to store samples and models')
         g_exp.add_argument('--debug', action='store_true', help='debug mode or not')
 
-        g_exp.add_argument('--num_views', type=int, default=1, help='How many views to use for multiview network.')
+        g_exp.add_argument('--num_views', type=int, default=2, help='How many views to use for multiview network.')
         g_exp.add_argument('--random_multiview', action='store_true', help='Select random multiview combination.')
 
         # Training related
@@ -28,13 +28,13 @@ class BaseOptions():
         g_train.add_argument('--gpu_id', type=int, default=0, help='gpu id for cuda')
         g_train.add_argument('--gpu_ids', type=str, default='0', help='gpu ids: e.g. 0  0,1,2, 0,2, -1 for CPU mode')
 
-        g_train.add_argument('--num_threads', default=1, type=int, help='# sthreads for loading data')
+        g_train.add_argument('--num_threads', default=0, type=int, help='# sthreads for loading data')
         g_train.add_argument('--serial_batches', action='store_true',
                              help='if true, takes images in order to make batches, otherwise takes them randomly')
         g_train.add_argument('--pin_memory', action='store_true', help='pin_memory')
         
-        g_train.add_argument('--batch_size', type=int, default=2, help='input batch size')
-        g_train.add_argument('--learning_rate', type=float, default=1e-3, help='adam learning rate')
+        g_train.add_argument('--batch_size', type=int, default=1, help='input batch size')
+        g_train.add_argument('--learning_rate', type=float, default=1e-4, help='adam learning rate')
         g_train.add_argument('--learning_rateC', type=float, default=1e-3, help='adam learning rate')
         g_train.add_argument('--num_epoch', type=int, default=100, help='num epoch to train')
 
@@ -51,7 +51,7 @@ class BaseOptions():
         # Testing related
         g_test = parser.add_argument_group('Testing')
         g_test.add_argument('--resolution', type=int, default=256, help='# of grid in mesh reconstruction')
-        g_test.add_argument('--test_folder_path', type=str, default=None, help='the folder of test image')
+        g_test.add_argument('--test_folder_path', type=str, default="../sample_images", help='the folder of test image')
 
         # Sampling related
         g_sample = parser.add_argument_group('Sampling')
@@ -106,11 +106,11 @@ class BaseOptions():
                             help='how many meshes to generate during testing')
 
         # path
-        parser.add_argument('--checkpoints_path', type=str, default='./checkpoints', help='path to save checkpoints')
-        parser.add_argument('--load_netG_checkpoint_path', type=str, default=None, help='path to save checkpoints')
-        parser.add_argument('--load_netC_checkpoint_path', type=str, default=None, help='path to save checkpoints')
+        parser.add_argument('--checkpoints_path', type=str, default='../checkpoints/example', help='path to save checkpoints')
+        parser.add_argument('--load_netG_checkpoint_path', type=str, default='../checkpoints/net_G', help='path to save checkpoints')
+        parser.add_argument('--load_netC_checkpoint_path', type=str, default='../checkpoints/net_C', help='path to save checkpoints')
         parser.add_argument('--results_path', type=str, default='./results', help='path to save results ply')
-        parser.add_argument('--load_checkpoint_path', type=str, help='path to save results ply')
+        parser.add_argument('--load_checkpoint_path', type=str, help='path to save results ply', default='../checkpoints/')
         parser.add_argument('--single', type=str, default='', help='single data for training')
         # for single image reconstruction
         parser.add_argument('--mask_path', type=str, help='path for input mask')

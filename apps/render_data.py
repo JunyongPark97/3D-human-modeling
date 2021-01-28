@@ -1,4 +1,5 @@
 #from data.config import raw_dataset, render_dataset, archive_dataset, model_list, zip_path
+from natsort import natsort
 
 from lib.renderer.camera import Camera
 import numpy as np
@@ -266,11 +267,11 @@ def render_prt_ortho(out_path, folder_name, subject_name, shs, rndr, rndr_uv, im
 
 
 if __name__ == '__main__':
-    shs = np.load('./env_sh.npy')
+    shs = np.load('../env_sh.npy')
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-i', '--input', type=str, default='/home/shunsuke/Downloads/rp_dennis_posed_004_OBJ')
-    parser.add_argument('-o', '--out_dir', type=str, default='/home/shunsuke/Documents/hf_human')
+    parser.add_argument('-i', '--input', type=str, default='/home/ubuntu/Desktop/newdata')
+    parser.add_argument('-o', '--out_dir', type=str, default='/home/ubuntu/Desktop/PIFu/data')
     parser.add_argument('-m', '--ms_rate', type=int, default=1, help='higher ms rate results in less aliased output. MESA renderer only supports ms_rate=1.')
     parser.add_argument('-e', '--egl',  action='store_true', help='egl rendering option. use this when rendering with headless server with NVIDIA GPU')
     parser.add_argument('-s', '--size',  type=int, default=512, help='rendering image size')
@@ -283,8 +284,12 @@ if __name__ == '__main__':
     from lib.renderer.gl.prt_render import PRTRender
     rndr = PRTRender(width=args.size, height=args.size, ms_rate=args.ms_rate, egl=args.egl)
     rndr_uv = PRTRender(width=args.size, height=args.size, uv_mode=True, egl=args.egl)
-
-    if args.input[-1] == '/':
-        args.input = args.input[:-1]
-    subject_name = args.input.split('/')[-1][:-4]
-    render_prt_ortho(args.out_dir, args.input, subject_name, shs, rndr, rndr_uv, args.size, 1, 1, pitch=[0])
+    subject_name = []
+    folder_names_raw = os.listdir(args.input)
+    folder_names = natsort.natsorted(folder_names_raw, reverse=False)
+    for i in range(len(folder_names)):
+        if folder_names[i][-1] == '/':
+            folder_names[i] = folder_names[i][:-1]
+        tmp_folder_name = folder_names[i]
+        subject_name.append(tmp_folder_name[:-4])
+        render_prt_ortho(args.out_dir, args.input + '/' + folder_names[i], subject_name[i], shs, rndr, rndr_uv, args.size, 1, 1, pitch=[0])
