@@ -16,7 +16,7 @@ MLP_DIM_COLOR='513 1024 512 256 128 3'
 # NOTE: one can change here to reconstruct mesh in a different resolution.
 VOL_RES=256
 
-CHECKPOINTS_NETG_PATH='./checkpoints/net_G'
+CHECKPOINTS_NETG_PATH='./checkpoints/example/example/netG_latest'
 CHECKPOINTS_NETC_PATH='./checkpoints/net_C'
 
 TEST_FOLDER_PATH='./sample_images'

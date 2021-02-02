@@ -9,7 +9,7 @@ class BaseOptions():
     def initialize(self, parser):
         # Datasets related
         g_data = parser.add_argument_group('Data')
-        g_data.add_argument('--dataroot', type=str, default='../data',
+        g_data.add_argument('--dataroot', type=str, default='../data/',
                             help='path to images (data folder)')
 
         g_data.add_argument('--loadSize', type=int, default=512, help='load size of input image')
@@ -32,19 +32,19 @@ class BaseOptions():
         g_train.add_argument('--serial_batches', action='store_true',
                              help='if true, takes images in order to make batches, otherwise takes them randomly')
         g_train.add_argument('--pin_memory', action='store_true', help='pin_memory')
-        
+
         g_train.add_argument('--batch_size', type=int, default=1, help='input batch size')
         g_train.add_argument('--learning_rate', type=float, default=1e-4, help='adam learning rate')
         g_train.add_argument('--learning_rateC', type=float, default=1e-3, help='adam learning rate')
-        g_train.add_argument('--num_epoch', type=int, default=100, help='num epoch to train')
+        g_train.add_argument('--num_epoch', type=int, default=8, help='num epoch to train')
 
         g_train.add_argument('--freq_plot', type=int, default=10, help='freqency of the error plot')
         g_train.add_argument('--freq_save', type=int, default=50, help='freqency of the save_checkpoints')
         g_train.add_argument('--freq_save_ply', type=int, default=100, help='freqency of the save ply')
-       
+
         g_train.add_argument('--no_gen_mesh', action='store_true')
         g_train.add_argument('--no_num_eval', action='store_true')
-        
+
         g_train.add_argument('--resume_epoch', type=int, default=-1, help='epoch resuming the training')
         g_train.add_argument('--continue_train', action='store_true', help='continue training: load the latest model')
 
@@ -106,11 +106,14 @@ class BaseOptions():
                             help='how many meshes to generate during testing')
 
         # path
-        parser.add_argument('--checkpoints_path', type=str, default='../checkpoints/example', help='path to save checkpoints')
-        parser.add_argument('--load_netG_checkpoint_path', type=str, default='../checkpoints/net_G', help='path to save checkpoints')
-        parser.add_argument('--load_netC_checkpoint_path', type=str, default='../checkpoints/net_C', help='path to save checkpoints')
+        parser.add_argument('--checkpoints_path', type=str, default='../checkpoints/90',
+                            help='path to save checkpoints')
+        parser.add_argument('--load_netG_checkpoint_path', type=str, default='../checkpoints/90/example/netG_latest',
+                            help='path to save checkpoints')
+        parser.add_argument('--load_netC_checkpoint_path', type=str, default=None, help='path to save checkpoints')
         parser.add_argument('--results_path', type=str, default='./results', help='path to save results ply')
-        parser.add_argument('--load_checkpoint_path', type=str, help='path to save results ply', default='../checkpoints/')
+        parser.add_argument('--load_checkpoint_path', type=str, help='path to save results ply',
+                            default='../checkpoints/')
         parser.add_argument('--single', type=str, default='', help='single data for training')
         # for single image reconstruction
         parser.add_argument('--mask_path', type=str, help='path for input mask')

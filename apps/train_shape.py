@@ -24,6 +24,7 @@ from lib.geometry import index
 # get options
 opt = BaseOptions().parse()
 
+
 def train(opt):
     # set cuda
     cuda = torch.device('cuda:%d' % opt.gpu_id)
@@ -51,7 +52,7 @@ def train(opt):
     optimizerG = torch.optim.RMSprop(netG.parameters(), lr=opt.learning_rate, momentum=0, weight_decay=0)
     lr = opt.learning_rate
     print('Using Network: ', netG.name)
-    
+
     def set_train():
         netG.train()
 
@@ -81,7 +82,7 @@ def train(opt):
         outfile.write(json.dumps(vars(opt), indent=2))
 
     # training
-    start_epoch = 0 if not opt.continue_train else max(opt.resume_epoch,0)
+    start_epoch = 0 if not opt.continue_train else max(opt.resume_epoch, 0)
     for epoch in range(start_epoch, opt.num_epoch):
         epoch_start_time = time.time()
 
@@ -116,8 +117,8 @@ def train(opt):
                 print(
                     'Name: {0} | Epoch: {1} | {2}/{3} | Err: {4:.06f} | LR: {5:.06f} | Sigma: {6:.02f} | dataT: {7:.05f} | netT: {8:.05f} | ETA: {9:02d}:{10:02d}'.format(
                         opt.name, epoch, train_idx, len(train_data_loader), error.item(), lr, opt.sigma,
-                                                                            iter_start_time - iter_data_time,
-                                                                            iter_net_time - iter_start_time, int(eta // 60),
+                        iter_start_time - iter_data_time,
+                        iter_net_time - iter_start_time, int(eta // 60),
                         int(eta - 60 * (eta // 60))))
 
             if train_idx % opt.freq_save == 0 and train_idx != 0:

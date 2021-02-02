@@ -15,6 +15,7 @@ import logging
 log = logging.getLogger('trimesh')
 log.setLevel(40)
 
+
 def load_trimesh(root_dir):
     folders = os.listdir(root_dir)
     meshs = {}
@@ -23,6 +24,7 @@ def load_trimesh(root_dir):
         meshs[sub_name] = trimesh.load(os.path.join(root_dir, f, '%s_100k.obj' % sub_name))
 
     return meshs
+
 
 def save_samples_truncted_prob(fname, points, prob):
     '''
@@ -80,7 +82,7 @@ class TrainDataset(Dataset):
         self.num_sample_inout = self.opt.num_sample_inout
         self.num_sample_color = self.opt.num_sample_color
 
-        self.yaw_list = list(range(0,360,1))
+        self.yaw_list = list(range(0, 360, 1))
         self.pitch_list = [0]
         self.subjects = self.get_subjects()
 
@@ -128,7 +130,7 @@ class TrainDataset(Dataset):
         pitch = self.pitch_list[pid]
 
         # The ids are an even distribution of num_views around view_id
-        view_ids = [self.yaw_list[(yid + len(self.yaw_list) // num_views * offset) % len(self.yaw_list)]
+        view_ids = [self.yaw_list[(yid + len(self.yaw_list) // (num_views * 2) * offset) % len(self.yaw_list)]
                     for offset in range(num_views)]
         if random_sample:
             view_ids = np.random.choice(self.yaw_list, num_views, replace=False)
@@ -270,7 +272,8 @@ class TrainDataset(Dataset):
                         :self.num_sample_inout // 2] if nin > self.num_sample_inout // 2 else inside_points
         outside_points = outside_points[
                          :self.num_sample_inout // 2] if nin > self.num_sample_inout // 2 else outside_points[
-                                                                                               :(self.num_sample_inout - nin)]
+                                                                                               :(
+                                                                                                           self.num_sample_inout - nin)]
 
         samples = np.concatenate([inside_points, outside_points], 0).T
         labels = np.concatenate([np.ones((1, inside_points.shape[0])), np.zeros((1, outside_points.shape[0]))], 1)
@@ -280,7 +283,6 @@ class TrainDataset(Dataset):
 
         samples = torch.Tensor(samples).float()
         labels = torch.Tensor(labels).float()
-        
 
         del sample_points
         del surface_points
@@ -293,7 +295,6 @@ class TrainDataset(Dataset):
             'samples': samples,
             'labels': labels
         }
-
 
     def get_color_sampling(self, subject, yid, pid=0):
         yaw = self.yaw_list[yid]
@@ -369,13 +370,13 @@ class TrainDataset(Dataset):
             'b_max': self.B_MAX,
         }
         render_data = self.get_render(subject, num_views=self.num_views, yid=yid, pid=pid,
-                                        random_sample=self.opt.random_multiview)
+                                      random_sample=self.opt.random_multiview)
         res.update(render_data)
 
         if self.opt.num_sample_inout:
             sample_data = self.select_sampling_method(subject)
             res.update(sample_data)
-        
+
         # img = np.uint8((np.transpose(render_data['img'][0].numpy(), (1, 2, 0)) * 0.5 + 0.5)[:, :, ::-1] * 255.0)
         # rot = render_data['calib'][0,:3, :3]
         # trans = render_data['calib'][0,:3, 3:4]
