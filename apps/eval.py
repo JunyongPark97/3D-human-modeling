@@ -68,11 +68,18 @@ class Evaluator:
             img_name.append(os.path.splitext(os.path.basename(image_path[i]))[0])
         # img_name = os.path.splitext(os.path.basename(image_path))[0]
         # Calib
-        B_MIN = np.array([-128, -28, -128])
-        B_MAX = np.array([128, 228, 128])
+        B_MIN = np.array([-1, -1, -1])
+        B_MAX = np.array([1, 1, 1])
         projection_matrix = np.identity(4)
         projection_matrix[1, 1] = -1
         calib = torch.Tensor(projection_matrix).float()
+        projection_matrix_90 = np.identity(4)
+        projection_matrix_90[0, 0] = 0
+        projection_matrix_90[0, 2] = 1
+        projection_matrix_90[1, 1] = -1
+        projection_matrix_90[2, 0] = -1
+        projection_matrix_90[2, 2] = 0
+        calib_90 = torch.Tensor(projection_matrix_90).float()
         # Mask
         mask = []
         for i in range(len(mask_path)):
@@ -94,41 +101,41 @@ class Evaluator:
         image_result = torch.stack(image, dim=0)
         # image_result = image_result.view(image_result[0] * image_result[1], image_result[2], image_result[3], image_result[4])
 
-        #calib
-        calib_list = []
-        for i in range(len(param_path)):
-            # loading calibration data
-            param = np.load(param_path[i], allow_pickle=True)
-            # pixel unit / world unit
-            ortho_ratio = param.item().get('ortho_ratio')
-            # world unit / model unit
-            scale = param.item().get('scale')
-            # camera center world coordinate
-            center = param.item().get('center')
-            # model rotation
-            R = param.item().get('R')
-
-            translate = -np.matmul(R, center).reshape(3, 1)
-            extrinsic = np.concatenate([R, translate], axis=1)
-            extrinsic = np.concatenate([extrinsic, np.array([0, 0, 0, 1]).reshape(1, 4)], 0)
-            # Match camera space to image pixel space
-            scale_intrinsic = np.identity(4)
-            scale_intrinsic[0, 0] = scale / ortho_ratio
-            scale_intrinsic[1, 1] = -scale / ortho_ratio
-            scale_intrinsic[2, 2] = scale / ortho_ratio
-            # Match image pixel space to image uv space
-            uv_intrinsic = np.identity(4)
-            uv_intrinsic[0, 0] = 1.0 / float(self.opt.loadSize // 2)
-            uv_intrinsic[1, 1] = 1.0 / float(self.opt.loadSize // 2)
-            uv_intrinsic[2, 2] = 1.0 / float(self.opt.loadSize // 2)
-            # Transform under image pixel space
-            trans_intrinsic = np.identity(4)
-
-            intrinsic = np.matmul(trans_intrinsic, np.matmul(uv_intrinsic, scale_intrinsic))
-            calib = torch.Tensor(np.matmul(intrinsic, extrinsic)).float()
-            calib_list.append(calib)
-
-        calib_result = torch.stack(calib_list, dim=0)
+        # #calib
+        # calib_list = []
+        # for i in range(len(param_path)):
+        #     # loading calibration data
+        #     param = np.load(param_path[i], allow_pickle=True)
+        #     # pixel unit / world unit
+        #     ortho_ratio = param.item().get('ortho_ratio')
+        # #     # world unit / model unit
+        #     scale = param.item().get('scale')
+        # #     # camera center world coordinate
+        #     center = param.item().get('center')
+        # #     # model rotation
+        #     R = param.item().get('R')
+        # #
+        #     translate = -np.matmul(R, center).reshape(3, 1)
+        #     extrinsic = np.concatenate([R, translate], axis=1)
+        #     extrinsic = np.concatenate([extrinsic, np.array([0, 0, 0, 1]).reshape(1, 4)], 0)
+        #     # Match camera space to image pixel space
+        #     scale_intrinsic = np.identity(4)
+        #     scale_intrinsic[0, 0] = scale / ortho_ratio
+        #     scale_intrinsic[1, 1] = -scale / ortho_ratio
+        #     scale_intrinsic[2, 2] = scale / ortho_ratio
+        #     # Match image pixel space to image uv space
+        #     uv_intrinsic = np.identity(4)
+        #     uv_intrinsic[0, 0] = 1.0 / float(self.opt.loadSize // 2)
+        #     uv_intrinsic[1, 1] = 1.0 / float(self.opt.loadSize // 2)
+        #     uv_intrinsic[2, 2] = 1.0 / float(self.opt.loadSize // 2)
+        #     # Transform under image pixel space
+        #     trans_intrinsic = np.identity(4)
+        #
+        #     intrinsic = np.matmul(trans_intrinsic, np.matmul(uv_intrinsic, scale_intrinsic))
+        #     calib = torch.Tensor(np.matmul(intrinsic, extrinsic)).float()
+        #     calib_list.append(calib)
+        #
+        calib_result = torch.stack([calib, calib_90], dim=0)
         # calib_result = calib_result.view(calib_result[0] * calib_result[1], calib_result[2], calib_result[3])
         return {
             'name': img_name,
